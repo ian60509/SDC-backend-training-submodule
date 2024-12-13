@@ -41,3 +41,4 @@ tomli==2.0.1
 typing_extensions==4.12.2
 uvicorn==0.30.6
 trio
+python-multipart

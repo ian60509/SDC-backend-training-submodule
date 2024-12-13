@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from fastapi import Body, FastAPI
 from fastapi import Query, Path
+from fastapi import File, Form, UploadFile, HTTPException
 from pydantic import BaseModel
 from fastapi import Cookie
 from fastapi import Header
@@ -16,6 +17,9 @@ class Item(BaseModel):
     description: str = None
     price: float = None
     tax: float = None
+
+class FormItem(Item):
+    pass
 
 class SortOrder(str, Enum):
     asc = "asc"
@@ -112,4 +116,24 @@ async def read_items_cookie(
     return {
         "session_id": session_id, 
         "message": "This is the session ID obtained from the cookies."
+    }
+
+@app.post("/items/form_and_file/")
+async def create_item_with_file(
+    name: Annotated[str, Form()],
+    price: Annotated[float, Form()] ,
+    description: Annotated[str, Form()] = None,
+    tax: Annotated[float, Form()] = None,
+    file: UploadFile = File(..., description="Upload file is required"),
+    
+):
+    if price < 0:
+        raise HTTPException(status_code=400, detail="Price cannot be negativee")
+    
+    return {"filename": file.filename,
+            "name": name,
+            "description": description,
+            "price": price,
+            "tax": tax, 
+            "message": "This is an item created using form data and a file."
     }
