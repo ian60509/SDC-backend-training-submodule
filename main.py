@@ -1,8 +1,8 @@
-from typing import Annotated
+from typing import Annotated, List
 
 from datetime import datetime, timedelta
 
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI, status
 from fastapi import Query, Path
 from fastapi import File, Form, UploadFile, HTTPException
 from pydantic import BaseModel
@@ -137,3 +137,61 @@ async def create_item_with_file(
             "tax": tax, 
             "message": "This is an item created using form data and a file."
     }
+
+# --------------------- books ------------------------------
+class Author(BaseModel):
+    name: str
+    age: int
+
+class Book(BaseModel):
+    title: str
+    author: Author
+    summary: str = None
+
+fake_books : List[Book] = [
+    {
+        "title": "Book 1",
+        "author": {
+            "name": "Author 1",
+            "age": 30
+        },
+        "summary": "Summary of Book 1"
+    },
+    {
+        "title": "Book 2",
+        "author": {
+            "name": "Author 2",
+            "age": 35
+        },
+        "summary": "Summary of Book 2"
+    }
+]
+
+@app.get("/books/")
+async def get_books():
+    '''
+        Create an endpoint to retrieve a list of books 
+        with details such as the title, author, and summary.
+    '''
+    return fake_books
+
+
+@app.post("/books/create_with_author/")
+async def create_book_with_author(
+    book: Book,
+):
+    '''
+       Create an endpoint to add a new book with an author.
+    '''
+    fake_books.append(book)
+    return book
+
+@app.post("/books/", status_code = status.HTTP_201_CREATED)
+async def create_book(
+    book: Book,
+):
+    '''
+       Create an endpoint to add a new book.
+    '''
+    fake_books.append(book)
+    return book
